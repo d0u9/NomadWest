@@ -1,9 +1,10 @@
 {{- define "main" }}
 
 {{- if (and site.Params.profileMode.enabled .IsHome) }}
-{{- partial "facade.html" . }}
+{{- partial "images.html" . }}
+{{- partial "profile.html" . }}
 {{- else }} {{/* if not profileMode */}}
-{{- partial "enable_facade.html" . }}
+{{- partial "help.html" . }}
 {{- end }}{{/* end profileMode */}}
 
 {{- end }}{{- /* end main */ -}}

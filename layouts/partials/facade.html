@@ -56,13 +56,3 @@
     </div>
     {{- end}}
 </div>
-
-{{ if site.Params.imgbg -}}
-  {{- range first 1 site.Params.imgbg -}}
-    <style>
-      .body{
-        background-image: url('{{. | absURL}}') !important;
-      }
-    </style>
-  {{- end -}}
-{{- end -}}

@@ -1,4 +1,34 @@
 baseURL: https://example.org/
 languageCode: en-us
-title: My New Hugo Site
+title: Nomadic Westward
 theme: ["PaperMod"]
+
+languages:
+  en:
+    languageName: "English"
+    weight: 1
+    taxonomies:
+      category: categories
+      tag: tags
+    menu:
+      main:
+        - name: Gallery
+          url: ballery
+          weight: 1
+
+params:
+  profileMode:
+    enabled: true
+    subtitle: "At last, you shine — the end of my journey."
+    imageUrl:  "images/logo-square-text-dark.png"
+    imageTitle: "Nomadic Westward"
+    imageWidth: 240 # custom size
+    imageHeight: 240 # custom size
+    buttons:
+      - name: Gallery
+        url: "/gallery"
+      - name: Github
+        url: "https://github.com/"
+  imgbg:
+    - "/images/e.png"
+

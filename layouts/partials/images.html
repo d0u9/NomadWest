@@ -22,7 +22,7 @@
                 </ul>
             </div>
 
-            <div class="glide__arrows" data-glide-el="controls">
+            <div class="glide__arrows buttons" data-glide-el="controls">
               <button class="glide__arrow glide__arrow--left" data-glide-dir="<">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
                   <path d="M0 12l10.975 11 2.848-2.828-6.176-6.176H24v-3.992H7.646l6.176-6.176L10.975 1 0 12z"></path>
@@ -39,11 +39,12 @@
     <style>
     .images {
         max-width: var(--main-width);
-        margin-bottom: calc(var(--gap) * 6);
+        margin-bottom: calc(var(--gap));
     }
     .images_inner {
         max-width: var(--main-width);
-        height: calc(var(--main-width) / 2);
+        width: 100%;
+        aspect-ratio: 4 / 3;
         overflow: hidden; /* Hides any overflow */
         display: flex;
         justify-content: center;
@@ -67,6 +68,11 @@
     }
     .images_inner svg {
         fill: rgb(34 34 34 / 88%);
+    }
+    @media only screen and (max-width: 768px) {
+        .images_inner .buttons {
+            display: none;
+        }
     }
 
     </style>

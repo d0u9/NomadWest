@@ -36,26 +36,28 @@
 
 {{- $style := resources.Get "css/gallery.css" | minify }}
 <link rel="stylesheet" href="{{ $style.RelPermalink }}">
-<div style="
-    text-align: center;
-    color: #666;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-    font-size: 0.95rem;
-    margin: 15px auto;
-    padding: 10px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    width: fit-content;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    letter-spacing: 0.03em;">
+<div class="gallery-instructions">
     Click image to view fullscreen
+</div>
+
+<div id="fullscreen-overlay">
+    <div>
+        <div>
+            <img id="fullscreen-image" />
+        </div>
+        <div id="fullscreen-description">
+        </div>
+    </div>
+    <div class="close-button">&times;</div>
+    <div id="prev-button">&#10094;</div>
+    <div id="next-button">&#10095;</div>
 </div>
 
 <div class="gallery-container">
     <ul class="gallery-grid">
 {{- range $img := $webp }}
-        <li class="gallery-item" onclick="openFullscreen(this)">
-            <img src="{{ $img.Permalink }}" alt="{{ $img.Name }}" style="width: 100%; height: auto;" />
+        <li class="gallery-item">
+            <img src="{{ $img.Permalink }}" alt="{{ $img.Name }}" class="gallery-image" loading="lazy" />
             {{- $descFile := resources.GetMatch (printf "%s/%s.txt" $ctx.dir (path.Base $img.Name)) }}
             {{- if $descFile }}
             <div class="gallery-description">
@@ -69,100 +71,466 @@
                 {{- $numLines := len $filteredLines }}
                 {{- range $index, $line := $filteredLines }}
                     {{- if lt $index (sub $numLines 2) }}
-                    <p style="
-                        width: 100%; 
-                        text-align: center; 
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-                        font-weight: 200;
-                        font-size: 0.9rem;
-                        letter-spacing: 0.05em;
-                        line-height: 2;
-                        word-wrap: break-word;
-                        overflow-wrap: break-word;
-                        margin: 0;
-                        position: relative;
-                        transform: translateY(-20px);">{{ $line }}</p>
+                    <p class="description-text">{{ $line }}</p>
                     {{- else }}
-                    <p style="
-                        width: 100%;
-                        text-align: center;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-                        font-weight: 200;
-                        font-size: 0.6rem;
-                        letter-spacing: 0.05em;
-                        line-height: 2;
-                        word-wrap: break-word;
-                        overflow-wrap: break-word;
-                        margin: 0;
-                        position: absolute;
-                        bottom: {{ if eq $index (sub $numLines 1) }}15px{{ else }}40px{{ end }};">{{ $line }}</p>
+                    <p class="description-footer{{ if eq $index (sub $numLines 1) }} last-line{{ end }}">{{ $line }}</p>
                     {{- end }}
                 {{- end }}
             </div>
             {{- end }}
-            <script>
-            function openFullscreen(element) {
-                const img = element.querySelector('img');
-                if (!document.fullscreenElement) {
-                    const container = document.createElement('div');
-                    container.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0,0,0,0.9);
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        z-index: 9999;
-                        cursor: pointer;
-                        transition: opacity 0.3s ease;
-                    `;
-                    
-                    const clone = img.cloneNode(true);
-                    clone.style.cssText = `
-                        max-width: 90%;
-                        max-height: 90vh;
-                        object-fit: contain;
-                        transform: scale(0.5);
-                        opacity: 0;
-                        transition: transform 0.3s ease, opacity 0.3s ease;
-                    `;
-                    
-                    container.appendChild(clone);
-                    document.body.appendChild(container);
-                    
-                    // Trigger animation
-                    setTimeout(() => {
-                        clone.style.transform = 'scale(1)';
-                        clone.style.opacity = '1';
-                    }, 50);
-                    
-                    const closeFullscreen = () => {
-                        clone.style.transform = 'scale(0.5)';
-                        clone.style.opacity = '0';
-                        container.style.opacity = '0';
-                        setTimeout(() => {
-                            document.body.removeChild(container);
-                            document.removeEventListener('keydown', handleEscKey);
-                        }, 300);
-                    };
-
-                    const handleEscKey = (e) => {
-                        if (e.key === 'Escape') {
-                            closeFullscreen();
-                        }
-                    };
-                    
-                    container.onclick = closeFullscreen;
-                    document.addEventListener('keydown', handleEscKey);
-                }
-            }
-            </script>
         </li>
 {{- end }}
     </ul>
 </div>
+
+<style>
+    /* Gallery Container */
+    .gallery-container {
+        padding: 20px;
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    /* Grid Layout */
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        padding: 0;
+        list-style: none;
+    }
+
+    /* Gallery Items */
+    .gallery-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        max-width: 300px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .gallery-item:hover {
+        transform: scale(1.02);
+    }
+
+    .gallery-item img {
+        width: 300px;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .gallery-item:hover img {
+        transform: scale(1.05);
+    }
+
+    .gallery-image {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Description Overlay */
+    .gallery-description {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0);
+        color: white;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .gallery-item:hover .gallery-description {
+        background: rgba(0,0,0,0.7);
+        opacity: 1;
+    }
+
+    /* Description Text */
+    .description-text {
+        width: 100%;
+        text-align: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        font-weight: 200;
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
+        line-height: 2;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        margin: 0;
+        position: relative;
+        transform: translateY(-20px);
+    }
+
+    .description-footer {
+        width: 100%;
+        text-align: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        font-weight: 200;
+        font-size: 0.6rem;
+        letter-spacing: 0.05em;
+        line-height: 2;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        margin: 0;
+        position: absolute;
+        bottom: 40px;
+    }
+
+    .description-footer.last-line {
+        bottom: 15px;
+    }
+
+    /* Instructions */
+    .gallery-instructions {
+        text-align: center;
+        color: #666;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        font-size: 0.95rem;
+        margin: 15px auto;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        width: fit-content;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        letter-spacing: 0.03em;
+    }
+
+    /* Fullscreen Overlay */
+    #fullscreen-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        overflow: hidden;
+        touch-action: none;
+    }
+
+    #fullscreen-overlay > div:first-of-type {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-height: 90vh;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #fullscreen-overlay > div:first-of-type > div:first-of-type {
+        width: 100%;
+        height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+    }
+
+    /* Fullscreen Image */
+    #fullscreen-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        margin: 0 auto;
+        opacity: 0;
+        transform: translateX(0);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Fullscreen Description */
+    #fullscreen-description {
+        margin-top: 20px;
+        color: white;
+        text-align: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        width: 100%;
+        opacity: 0;
+        transform: translateX(0);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    #fullscreen-description p {
+        width: 100%;
+        text-align: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+        font-weight: 200;
+        letter-spacing: 0.05em;
+        line-height: 2;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        margin: 5px 0;
+        position: static;
+        transform: translateX(0);
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    #fullscreen-description p:not(:last-child):not(:nth-last-child(2)) {
+        font-size: 0.9rem;
+    }
+
+    #fullscreen-description p:nth-last-child(-n+2) {
+        font-size: 0.6rem;
+        color: #e6e6e6;
+    }
+
+    /* Navigation Controls */
+    .close-button {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.3s ease, color 0.2s ease;
+    }
+
+    #prev-button, #next-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: white;
+        font-size: 40px;
+        cursor: pointer;
+        user-select: none;
+        opacity: 0;
+        transition: opacity 0.3s ease, color 0.2s ease;
+    }
+
+    #prev-button {
+        left: 30px;
+    }
+
+    #next-button {
+        right: 30px;
+    }
+
+    #prev-button:hover, #next-button:hover, .close-button:hover {
+        color: #ddd;
+    }
+
+    /* Animation Classes */
+    .visible {
+        opacity: 1 !important;
+    }
+
+    .slide-left {
+        transform: translateX(-100px) !important;
+    }
+
+    .slide-right {
+        transform: translateX(100px) !important;
+    }
+
+    .slide-center {
+        transform: translateX(0) !important;
+    }
+
+    /* Mobile Responsiveness */
+    @media screen and (max-width: 768px) {
+        .gallery-grid {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gallery-item {
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s ease;
+        }
+
+        #fullscreen-description {
+            margin-top: 10px;
+        }
+
+        #fullscreen-overlay > div:first-of-type {
+            top: 45%;
+        }
+
+        #prev-button, #next-button {
+            display: none;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const overlay = document.getElementById('fullscreen-overlay');
+    const fullscreenImage = document.getElementById('fullscreen-image');
+    const fullscreenDesc = document.getElementById('fullscreen-description');
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    const closeButton = document.querySelector('.close-button');
+    const galleryItems = Array.from(document.querySelectorAll('.gallery-item'));
+    let currentIndex = 0;
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let isMobile = window.innerWidth <= 768;
+
+    function showImage(index, direction = 'right') {
+        currentIndex = index;
+        const item = galleryItems[index];
+        const img = item.querySelector('img');
+        const desc = item.querySelector('.gallery-description');
+        
+        // Reset classes
+        fullscreenImage.classList.remove('visible', 'slide-left', 'slide-right', 'slide-center');
+        fullscreenDesc.classList.remove('visible', 'slide-left', 'slide-right', 'slide-center');
+        
+        // Add slide direction
+        if (direction === 'left') {
+            fullscreenImage.classList.add('slide-left');
+            fullscreenDesc.classList.add('slide-left');
+        } else {
+            fullscreenImage.classList.add('slide-right');
+            fullscreenDesc.classList.add('slide-right');
+        }
+        
+        // Force reflow
+        void fullscreenImage.offsetWidth;
+        
+        fullscreenImage.src = img.src;
+        fullscreenDesc.innerHTML = desc ? desc.innerHTML : '';
+        
+        // Show elements and center them
+        setTimeout(() => {
+            fullscreenImage.classList.add('visible', 'slide-center');
+            fullscreenDesc.classList.add('visible', 'slide-center');
+            Array.from(fullscreenDesc.children).forEach((p, i) => {
+                setTimeout(() => p.classList.add('visible'), i * 100);
+            });
+        }, 50);
+    }
+
+    function showNext() {
+        const nextIndex = (currentIndex + 1) % galleryItems.length;
+        showImage(nextIndex, 'right');
+    }
+
+    function showPrev() {
+        const prevIndex = (currentIndex - 1 + galleryItems.length) % galleryItems.length;
+        showImage(prevIndex, 'left');
+    }
+
+    function showOverlay() {
+        overlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+            overlay.classList.add('visible');
+            closeButton.classList.add('visible');
+            if (!isMobile) {
+                prevButton.classList.add('visible');
+                nextButton.classList.add('visible');
+            }
+        }, 50);
+    }
+
+    function hideOverlay() {
+        overlay.classList.remove('visible');
+        closeButton.classList.remove('visible');
+        prevButton.classList.remove('visible');
+        nextButton.classList.remove('visible');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+
+    // Touch event handlers
+    overlay.addEventListener('touchstart', (e) => {
+        if (isMobile) {
+            touchStartX = e.touches[0].clientX;
+        }
+    }, { passive: true });
+
+    overlay.addEventListener('touchmove', (e) => {
+        if (isMobile) {
+            touchEndX = e.touches[0].clientX;
+        }
+    }, { passive: true });
+
+    overlay.addEventListener('touchend', () => {
+        if (isMobile) {
+            const swipeDistance = touchEndX - touchStartX;
+            const minSwipeDistance = 50;
+
+            if (Math.abs(swipeDistance) >= minSwipeDistance) {
+                if (swipeDistance > 0) {
+                    showPrev();
+                } else {
+                    showNext();
+                }
+            }
+        }
+    });
+
+    galleryItems.forEach((item, index) => {
+        item.addEventListener('click', function(e) {
+            currentIndex = index;
+            showImage(currentIndex);
+            showOverlay();
+            e.stopPropagation();
+        });
+    });
+
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            hideOverlay();
+        }
+    });
+
+    closeButton.addEventListener('click', hideOverlay);
+
+    prevButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        showPrev();
+    });
+
+    nextButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        showNext();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (overlay.style.display === 'block') {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                showPrev();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                showNext();
+            } else if (e.key === 'Escape') {
+                hideOverlay();
+            }
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        isMobile = window.innerWidth <= 768;
+    });
+});
+</script>
 
 {{- end }}{{- /* end main */ -}}

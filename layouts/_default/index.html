@@ -7,6 +7,14 @@
 {{- partial "help.html" . }}
 {{- end }}{{/* end profileMode */}}
 
+<style>
+    .main {
+        padding-top: calc(var(--gap) / 4);
+        min-height: calc(100vh - var(--footer-height));
+    }
+    .header {
+        display: none;
+    }
+</style>
+
 {{- end }}{{- /* end main */ -}}
-
-

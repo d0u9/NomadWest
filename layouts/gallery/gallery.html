@@ -10,7 +10,8 @@
    {{- $imgs = append . $imgs }}
 {{- end }}
 
-{{- $webp := slice }}
+{{- $webpSmall := slice }}
+{{- $webpLarge := slice }}
 {{- range $img := $imgs }}
     {{- $processableFormats := (slice "jpg" "jpeg" "png" "tif" "bmp" "gif") -}}
     {{- if hugo.IsExtended -}}
@@ -18,24 +19,24 @@
     {{- end -}}
     {{- $prod := (hugo.IsProduction | or (eq site.Params.env "production")) }}
     {{- if and (in $processableFormats $img.MediaType.SubType) (eq $prod true)}}
-        {{- if and $ctx.imageWidth (gt ($img.Width) ($ctx.imageWidth)) }}
-            {{- if and hugo.IsExtended $ctx.webp }}
-                {{- $webp = $webp | append ($img.Resize (printf "%dx webp" $ctx.imageWidth)) }}
-            {{- else }}}
-                {{- $webp = $webp | append ($img.Resize (printf "%dx" $ctx.imageWidth)) }}
-            {{- end }}
+        {{- if hugo.IsExtended }}
+            {{- $webpSmall = $webpSmall | append ($img.Resize (printf "%dx webp" $ctx.smallImageWidth)) }}
+            {{- $webpLarge = $webpLarge | append ($img.Resize (printf "%dx webp" $ctx.largeImageWidth)) }}
+        {{- else }}
+            {{- $webpSmall = $webpSmall | append ($img.Resize (printf "%dx" $ctx.smallImageWidth)) }}
+            {{- $webpLarge = $webpLarge | append ($img.Resize (printf "%dx" $ctx.largeImageWidth)) }}
         {{- end }}
     {{- else }}
-        {{- if and hugo.IsExtended $ctx.webp }}
-            {{- $webp = $webp | append ($img.Resize (printf "%dx%d webp" $img.Width $img.Height)) }}
+        {{- if hugo.IsExtended }}
+            {{- $webpSmall = $webpSmall | append ($img.Resize (printf "%dx%d webp" $img.Width $img.Height)) }}
+            {{- $webpLarge = $webpLarge | append ($img.Resize (printf "%dx%d webp" $img.Width $img.Height)) }}
         {{- else }}
-            {{- $webp = $webp | append $img }}
+            {{- $webpSmall = $webpSmall | append $img }}
+            {{- $webpLarge = $webpLarge | append $img }}
         {{- end }}
     {{- end }}
 {{- end }}
 
-{{- $style := resources.Get "css/gallery.css" | minify }}
-<link rel="stylesheet" href="{{ $style.RelPermalink }}">
 <div class="gallery-instructions">
     Click image to view fullscreen
 </div>
@@ -55,8 +56,8 @@
 
 <div class="gallery-container">
     <ul class="gallery-grid">
-{{- range $img := $webp }}
-        <li class="gallery-item">
+{{- range $index, $img := $webpSmall }}
+        <li class="gallery-item" data-large-src="{{ (index $webpLarge $index).Permalink }}">
             <img src="{{ $img.Permalink }}" alt="{{ $img.Name }}" class="gallery-image" loading="lazy" />
             {{- $descFile := resources.GetMatch (printf "%s/%s.txt" $ctx.dir (path.Base $img.Name)) }}
             {{- if $descFile }}
@@ -238,13 +239,16 @@
 
     #fullscreen-overlay > div:first-of-type > div:first-of-type {
         width: 100%;
-        height: 50vh;
+        height: 77vh;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
         transform: translateX(0);
         transition: transform 0.3s ease;
+        @media only screen and (max-width: 768px) {
+            height: 50vh;
+        }
     }
 
     /* Fullscreen Image */
@@ -392,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showImage(index, direction = 'right') {
         currentIndex = index;
         const item = galleryItems[index];
-        const img = item.querySelector('img');
+        const largeSrc = item.dataset.largeSrc;
         const desc = item.querySelector('.gallery-description');
         
         // Reset classes
@@ -411,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Force reflow
         void fullscreenImage.offsetWidth;
         
-        fullscreenImage.src = img.src;
+        fullscreenImage.src = largeSrc;
         fullscreenDesc.innerHTML = desc ? desc.innerHTML : '';
         
         // Show elements and center them
@@ -496,12 +500,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) {
-            hideOverlay();
-        }
+        hideOverlay();
     });
-
-    closeButton.addEventListener('click', hideOverlay);
 
     prevButton.addEventListener('click', function(e) {
         e.stopPropagation();

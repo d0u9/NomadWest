@@ -3,5 +3,5 @@
 }
 
 .main .profile {
-    min-height: calc(100vh - var(--header-height) - var(--footer-height) -(var(--gap)* 8) - (var(--main-width) / 2));
+    min-height: calc(100vh - var(--header-height) - var(--footer-height) -(var(--gap)* 2) - (var(--main-width) / 2));
 }

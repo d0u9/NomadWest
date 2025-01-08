@@ -1,22 +1,33 @@
 <div class="images">
     {{- $imgs := slice }}
+    {{- $useWebp := default false site.Params.profileMode.useWebp }}
     {{- range resources.Match (printf "%s/*.jpg" site.Params.profileMode.slidesDir) }}
-       {{- $imgs = append . $imgs }}
+        {{- $img := . }}
+        {{- if not (urls.Parse .).IsAbs }}
+            {{- $img = resources.Get . }}
+        {{- end }}
+        {{- if and hugo.IsExtended $useWebp }}
+            {{- $img = $img.Resize (printf "%dx%d webp" .Width .Height) }}
+        {{- end }}
+        {{- $imgs = append $img $imgs }}
     {{- end }}
     {{- range resources.Match (printf "%s/*.png" site.Params.profileMode.slidesDir) }}
-       {{- $imgs = append . $imgs }}
+        {{- $img := . }}
+        {{- if not (urls.Parse .).IsAbs }}
+            {{- $img = resources.Get . }}
+        {{- end }}
+        {{- if and hugo.IsExtended $useWebp }}
+            {{- $img = $img.Resize (printf "%dx%d webp" .Width .Height) }}
+        {{- end }}
+        {{- $imgs = append $img $imgs }}
     {{- end }}
     <div class="images_inner">
         <div class="glide">
             <div class="glide__track" data-glide-el="track">
                 <ul class="glide__slides">
                 {{- range $imgs }}
-                    {{- $img := "" }}
-                    {{- if not (urls.Parse .).IsAbs }}
-                        {{- $img = resources.Get . }}
-                    {{- end }}
                     <li class="glide__slide">
-                        <img draggable="false" src="{{ $img.Permalink | absURL }}" />
+                        <img draggable="false" src="{{ .Permalink | absURL }}" loading="lazy" />
                     </li>
                 {{- end }}
                 </ul>
@@ -39,7 +50,7 @@
     <style>
     .images {
         max-width: var(--main-width);
-        margin-bottom: calc(var(--gap));
+        margin-bottom: calc(var(--gap) * 2);
     }
     .images_inner {
         max-width: var(--main-width);

@@ -12,9 +12,12 @@ languages:
       tag: tags
     menu:
       main:
+        - name: Home
+          url: /
+          weight: 1
         - name: Gallery
           url: gallery
-          weight: 1
+          weight: 2
 
 params:
   defaultTheme: light # dark, light, auto
@@ -31,9 +34,11 @@ params:
       - name: Gallery
         url: "/gallery"
       - name: Github
-        url: "https://github.com/"
+        url: "https://github.com/d0u9"
     slidesDir: "slides"
+    useWebp: true
     gallery:
       dir: "gallery"
       webp: true
-      imageWidth: 1024
+      smallImageWidth: 300
+      largeImageWidth: 1500

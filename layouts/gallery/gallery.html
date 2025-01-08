@@ -86,14 +86,14 @@
 
 <style>
     /* Gallery Container */
-    .gallery-container {
+    .main .gallery-container {
         padding: 20px;
         max-width: 1500px;
         margin: 0 auto;
     }
 
     /* Grid Layout */
-    .gallery-grid {
+    .main .gallery-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 15px;
@@ -102,7 +102,7 @@
     }
 
     /* Gallery Items */
-    .gallery-item {
+    .main .gallery-item {
         position: relative;
         overflow: hidden;
         border-radius: 8px;
@@ -112,11 +112,11 @@
         transition: transform 0.2s ease;
     }
 
-    .gallery-item:hover {
+    .main .gallery-item:hover {
         transform: scale(1.02);
     }
 
-    .gallery-item img {
+    .main .gallery-item img {
         width: 300px;
         height: 100%;
         object-fit: cover;
@@ -124,17 +124,17 @@
         transition: transform 0.3s ease;
     }
 
-    .gallery-item:hover img {
+    .main .gallery-item:hover img {
         transform: scale(1.05);
     }
 
-    .gallery-image {
+    .main .gallery-image {
         width: 100%;
         height: auto;
     }
 
     /* Description Overlay */
-    .gallery-description {
+    .main .gallery-description {
         position: absolute;
         top: 0;
         left: 0;
@@ -152,13 +152,13 @@
         transition: all 0.3s ease;
     }
 
-    .gallery-item:hover .gallery-description {
+    .main .gallery-item:hover .gallery-description {
         background: rgba(0,0,0,0.7);
         opacity: 1;
     }
 
     /* Description Text */
-    .description-text {
+    .main .description-text {
         width: 100%;
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
@@ -173,7 +173,7 @@
         transform: translateY(-20px);
     }
 
-    .description-footer {
+    .main .description-footer {
         width: 100%;
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
@@ -188,12 +188,12 @@
         bottom: 40px;
     }
 
-    .description-footer.last-line {
+    .main .description-footer.last-line {
         bottom: 15px;
     }
 
     /* Instructions */
-    .gallery-instructions {
+    .main .gallery-instructions {
         text-align: center;
         color: #666;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
@@ -208,7 +208,7 @@
     }
 
     /* Fullscreen Overlay */
-    #fullscreen-overlay {
+    .main #fullscreen-overlay {
         display: none;
         position: fixed;
         top: 0;
@@ -224,7 +224,7 @@
         touch-action: none;
     }
 
-    #fullscreen-overlay > div:first-of-type {
+    .main #fullscreen-overlay > div:first-of-type {
         position: absolute;
         top: 50%;
         left: 50%;
@@ -237,7 +237,7 @@
         align-items: center;
     }
 
-    #fullscreen-overlay > div:first-of-type > div:first-of-type {
+    .main #fullscreen-overlay > div:first-of-type > div:first-of-type {
         width: 100%;
         height: 77vh;
         display: flex;
@@ -252,7 +252,7 @@
     }
 
     /* Fullscreen Image */
-    #fullscreen-image {
+    .main #fullscreen-image {
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
@@ -263,7 +263,7 @@
     }
 
     /* Fullscreen Description */
-    #fullscreen-description {
+    .main #fullscreen-description {
         margin-top: 20px;
         color: white;
         text-align: center;
@@ -274,7 +274,7 @@
         transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
-    #fullscreen-description p {
+    .main #fullscreen-description p {
         width: 100%;
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
@@ -290,17 +290,17 @@
         transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
-    #fullscreen-description p:not(:last-child):not(:nth-last-child(2)) {
+    .main #fullscreen-description p:not(:last-child):not(:nth-last-child(2)) {
         font-size: 0.9rem;
     }
 
-    #fullscreen-description p:nth-last-child(-n+2) {
+    .main #fullscreen-description p:nth-last-child(-n+2) {
         font-size: 0.6rem;
         color: #e6e6e6;
     }
 
     /* Navigation Controls */
-    .close-button {
+    .main .close-button {
         position: absolute;
         top: 20px;
         right: 30px;
@@ -311,7 +311,7 @@
         transition: opacity 0.3s ease, color 0.2s ease;
     }
 
-    #prev-button, #next-button {
+    .main #prev-button, .main #next-button {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -323,57 +323,57 @@
         transition: opacity 0.3s ease, color 0.2s ease;
     }
 
-    #prev-button {
+    .main #prev-button {
         left: 30px;
     }
 
-    #next-button {
+    .main #next-button {
         right: 30px;
     }
 
-    #prev-button:hover, #next-button:hover, .close-button:hover {
+    .main #prev-button:hover, .main #next-button:hover, .main .close-button:hover {
         color: #ddd;
     }
 
     /* Animation Classes */
-    .visible {
+    .main .visible {
         opacity: 1 !important;
     }
 
-    .slide-left {
+    .main .slide-left {
         transform: translateX(-100px) !important;
     }
 
-    .slide-right {
+    .main .slide-right {
         transform: translateX(100px) !important;
     }
 
-    .slide-center {
+    .main .slide-center {
         transform: translateX(0) !important;
     }
 
     /* Mobile Responsiveness */
     @media screen and (max-width: 768px) {
-        .gallery-grid {
+        .main .gallery-grid {
             display: flex;
             flex-direction: column;
         }
 
-        .gallery-item {
+        .main .gallery-item {
             width: 100%;
             margin: 10px 0;
             transition: transform 0.2s ease;
         }
 
-        #fullscreen-description {
+        .main #fullscreen-description {
             margin-top: 10px;
         }
 
-        #fullscreen-overlay > div:first-of-type {
+        .main #fullscreen-overlay > div:first-of-type {
             top: 45%;
         }
 
-        #prev-button, #next-button {
+        .main #prev-button, .main #next-button {
             display: none;
         }
     }

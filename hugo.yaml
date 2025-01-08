@@ -18,6 +18,9 @@ languages:
         - name: Gallery
           url: gallery
           weight: 2
+        - name: About
+          url: about
+          weight: 99
 
 params:
   defaultTheme: light # dark, light, auto
@@ -35,6 +38,8 @@ params:
         url: "/gallery"
       - name: Github
         url: "https://github.com/d0u9"
+      - name: About
+        url: "/about"
     slidesDir: "slides"
     useWebp: true
     gallery:

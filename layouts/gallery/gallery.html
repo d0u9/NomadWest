@@ -34,9 +34,135 @@
     {{- end }}
 {{- end }}
 
+{{- $style := resources.Get "css/gallery.css" | minify }}
+<link rel="stylesheet" href="{{ $style.RelPermalink }}">
+<div style="
+    text-align: center;
+    color: #666;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    font-size: 0.95rem;
+    margin: 15px auto;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    width: fit-content;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    letter-spacing: 0.03em;">
+    Click image to view fullscreen
+</div>
+
+<div class="gallery-container">
+    <ul class="gallery-grid">
 {{- range $img := $webp }}
-<!-- <img src="{{ $img.Permalink }}" /> -->
-<p>{{ $img.Permalink }}</p>
+        <li class="gallery-item" onclick="openFullscreen(this)">
+            <img src="{{ $img.Permalink }}" alt="{{ $img.Name }}" style="width: 100%; height: auto;" />
+            {{- $descFile := resources.GetMatch (printf "%s/%s.txt" $ctx.dir (path.Base $img.Name)) }}
+            {{- if $descFile }}
+            <div class="gallery-description">
+                {{- $lines := split $descFile.Content "\n" }}
+                {{- $filteredLines := slice }}
+                {{- range $lines }}
+                    {{- if and (ne . "") (findRE "[[:print:]]+" . 1) }}
+                        {{- $filteredLines = $filteredLines | append . }}
+                    {{- end }}
+                {{- end }}
+                {{- $numLines := len $filteredLines }}
+                {{- range $index, $line := $filteredLines }}
+                    {{- if lt $index (sub $numLines 2) }}
+                    <p style="
+                        width: 100%; 
+                        text-align: center; 
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+                        font-weight: 200;
+                        font-size: 0.9rem;
+                        letter-spacing: 0.05em;
+                        line-height: 2;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        margin: 0;
+                        position: relative;
+                        transform: translateY(-20px);">{{ $line }}</p>
+                    {{- else }}
+                    <p style="
+                        width: 100%;
+                        text-align: center;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+                        font-weight: 200;
+                        font-size: 0.6rem;
+                        letter-spacing: 0.05em;
+                        line-height: 2;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        margin: 0;
+                        position: absolute;
+                        bottom: {{ if eq $index (sub $numLines 1) }}15px{{ else }}40px{{ end }};">{{ $line }}</p>
+                    {{- end }}
+                {{- end }}
+            </div>
+            {{- end }}
+            <script>
+            function openFullscreen(element) {
+                const img = element.querySelector('img');
+                if (!document.fullscreenElement) {
+                    const container = document.createElement('div');
+                    container.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.9);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 9999;
+                        cursor: pointer;
+                        transition: opacity 0.3s ease;
+                    `;
+                    
+                    const clone = img.cloneNode(true);
+                    clone.style.cssText = `
+                        max-width: 90%;
+                        max-height: 90vh;
+                        object-fit: contain;
+                        transform: scale(0.5);
+                        opacity: 0;
+                        transition: transform 0.3s ease, opacity 0.3s ease;
+                    `;
+                    
+                    container.appendChild(clone);
+                    document.body.appendChild(container);
+                    
+                    // Trigger animation
+                    setTimeout(() => {
+                        clone.style.transform = 'scale(1)';
+                        clone.style.opacity = '1';
+                    }, 50);
+                    
+                    const closeFullscreen = () => {
+                        clone.style.transform = 'scale(0.5)';
+                        clone.style.opacity = '0';
+                        container.style.opacity = '0';
+                        setTimeout(() => {
+                            document.body.removeChild(container);
+                            document.removeEventListener('keydown', handleEscKey);
+                        }, 300);
+                    };
+
+                    const handleEscKey = (e) => {
+                        if (e.key === 'Escape') {
+                            closeFullscreen();
+                        }
+                    };
+                    
+                    container.onclick = closeFullscreen;
+                    document.addEventListener('keydown', handleEscKey);
+                }
+            }
+            </script>
+        </li>
 {{- end }}
+    </ul>
+</div>
 
 {{- end }}{{- /* end main */ -}}

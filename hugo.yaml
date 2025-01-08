@@ -19,6 +19,7 @@ languages:
 params:
   defaultTheme: light # dark, light, auto
   disableThemeToggle: true
+  env: "production"
   profileMode:
     enabled: true
     subtitle: "At last, you shine — the end of my journey."
@@ -31,4 +32,8 @@ params:
         url: "/gallery"
       - name: Github
         url: "https://github.com/"
-    slidesDir: "images/slides"
+    slidesDir: "slides"
+    gallery:
+      dir: "gallery"
+      webp: true
+      imageWidth: 1024

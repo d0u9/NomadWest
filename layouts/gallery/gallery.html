@@ -1,0 +1,42 @@
+{{- define "main" }}
+
+{{- $ctx := site.Params.profileMode.gallery }}
+
+{{- $imgs := slice }}
+{{- range resources.Match (printf "%s/*.jpg" $ctx.dir) }}
+   {{- $imgs = append . $imgs }}
+{{- end }}
+{{- range resources.Match (printf "%s/*.png" $ctx.dir) }}
+   {{- $imgs = append . $imgs }}
+{{- end }}
+
+{{- $webp := slice }}
+{{- range $img := $imgs }}
+    {{- $processableFormats := (slice "jpg" "jpeg" "png" "tif" "bmp" "gif") -}}
+    {{- if hugo.IsExtended -}}
+        {{- $processableFormats = $processableFormats | append "webp" -}}
+    {{- end -}}
+    {{- $prod := (hugo.IsProduction | or (eq site.Params.env "production")) }}
+    {{- if and (in $processableFormats $img.MediaType.SubType) (eq $prod true)}}
+        {{- if and $ctx.imageWidth (gt ($img.Width) ($ctx.imageWidth)) }}
+            {{- if and hugo.IsExtended $ctx.webp }}
+                {{- $webp = $webp | append ($img.Resize (printf "%dx webp" $ctx.imageWidth)) }}
+            {{- else }}}
+                {{- $webp = $webp | append ($img.Resize (printf "%dx" $ctx.imageWidth)) }}
+            {{- end }}
+        {{- end }}
+    {{- else }}
+        {{- if and hugo.IsExtended $ctx.webp }}
+            {{- $webp = $webp | append ($img.Resize (printf "%dx%d webp" $img.Width $img.Height)) }}
+        {{- else }}
+            {{- $webp = $webp | append $img }}
+        {{- end }}
+    {{- end }}
+{{- end }}
+
+{{- range $img := $webp }}
+<!-- <img src="{{ $img.Permalink }}" /> -->
+<p>{{ $img.Permalink }}</p>
+{{- end }}
+
+{{- end }}{{- /* end main */ -}}
